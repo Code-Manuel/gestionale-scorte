@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Gestionale Scorte
 
 Progetto portfolio in Python per gestire scorte di magazzino, registrare movimenti di carico/scarico e generare alert di riordino.
