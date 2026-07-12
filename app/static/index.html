@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionale Scorte</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-a: #eef2f7;
+            --bg-b: #dbe4ea;
+            --panel: #ffffff;
+            --panel-soft: #f8fafc;
+            --text: #111827;
+            --muted: #4b5563;
+            --line: #d1d5db;
+            --brand: #0f766e;
+            --brand-dark: #115e59;
+            --warn: #b45309;
+            --danger: #b91c1c;
+            --danger-dark: #991b1b;
+            --shadow: 0 14px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background:
+                radial-gradient(circle at 12% 15%, #d8f3ee 0%, transparent 36%),
+                radial-gradient(circle at 85% 12%, #e2e8f0 0%, transparent 34%),
+                linear-gradient(165deg, var(--bg-a) 0%, var(--bg-b) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1360px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            background: linear-gradient(120deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-family: 'Source Serif 4', serif;
+            font-size: 34px;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .brand-logo {
+            display: block;
+            width: min(420px, 90%);
+            height: auto;
+            margin: 0 auto 10px;
+            object-fit: contain;
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .top-actions {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .tab-btn {
+            border: 1px solid #cbd5e1;
+            border-radius: 11px;
+            background: #ffffff;
+            color: #1f2937;
+            font-weight: 700;
+            padding: 11px 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover,
+        .tab-btn.active {
+            background: linear-gradient(130deg, var(--brand) 0%, var(--brand-dark) 100%);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .alert {
+            display: none;
+            margin-bottom: 14px;
+            border-radius: 10px;
+            padding: 11px 12px;
+            border-left: 4px solid;
+            font-size: 14px;
+        }
+
+        .alert.visible { display: block; }
+        .alert-error { background: #fef2f2; color: #7f1d1d; border-color: #dc2626; }
+        .alert-success { background: #ecfdf5; color: #065f46; border-color: #059669; }
+
+        .panel {
+            display: none;
+            background: var(--panel);
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+
+        .panel.active { display: block; }
+
+        .panel h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--panel-soft);
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 11px;
+            font-family: inherit;
+            font-size: 14px;
+            background: #fff;
+            color: #0f172a;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+        }
+
+        .stack { display: grid; gap: 10px; }
+        .stack-rows { display: grid; gap: 12px; }
+
+        button {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(130deg, var(--brand) 0%, var(--brand-dark) 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover { filter: brightness(0.95); }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-danger:hover { background: var(--danger-dark); }
+
+        .btn-soft {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-soft:hover { background: #cbd5e1; }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .row-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .warehouse-item,
+        .supplier-item,
+        .preview-item,
+        .ddt-item,
+        .smart-order-item,
+        .accounting-stat {
+            border: 1px solid #dbe2ea;
+            background: #fff;
+            border-radius: 10px;
+            padding: 11px;
+            display: grid;
+            gap: 4px;
+        }
+
+        .smart-order-item {
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .smart-order-item.urgent {
+            border-color: #fca5a5;
+            background: linear-gradient(120deg, #fff1f2 0%, #fee2e2 100%);
+        }
+
+        .smart-order-item .smart-order-risk {
+            color: #991b1b;
+            font-weight: 700;
+        }
+
+        .tab-notification {
+            position: absolute;
+            top: -7px;
+            right: -6px;
+            min-width: 21px;
+            height: 21px;
+            border-radius: 999px;
+            padding: 0 6px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #dc2626;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1;
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .tab-notification.visible {
+            display: inline-flex;
+        }
+
+        .accounting-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .accounting-stat .value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .chart-card {
+            background: #fff;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .chart-wrap {
+            position: relative;
+            min-height: 290px;
+        }
+
+        .supplier-item {
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .supplier-main {
+            display: grid;
+            gap: 2px;
+        }
+
+        .muted { color: var(--muted); font-size: 13px; }
+        .title-sm { font-weight: 700; color: #0f172a; }
+
+        .search-box { position: relative; }
+
+        .suggestions {
+            display: none;
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
+        }
+
+        .suggestions.visible { display: block; }
+
+        .suggestion-item {
+            border-bottom: 1px solid #edf2f7;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestion-item:hover { background: #f8fafc; }
+
+        .pill {
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 12px;
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .preview-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .table th,
+        .table td {
+            text-align: left;
+            padding: 9px 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table thead {
+            background: #1f2937;
+            color: #fff;
+        }
+
+        .full-width { margin-bottom: 16px; }
+
+        @media (max-width: 1024px) {
+            .top-actions,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-notification {
+                top: -5px;
+                right: -4px;
+            }
+
+            .accounting-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <img id="brand-logo" class="brand-logo" src="/static/geckostock.png" alt="GeckoStock">
+            <p>Powered by Manuel Cabras.</p>
+            <div class="top-actions">
+                <button class="tab-btn" data-panel="panel-magazzino">Crea il tuo magazzino</button>
+                <button class="tab-btn" data-panel="panel-ordina">Ordina prodotto <span id="order-urgent-badge" class="tab-notification">0</span></button>
+                <button class="tab-btn" data-panel="panel-bolla">Carica bolla</button>
+                <button class="tab-btn active" data-panel="panel-scarico">Scarico prodotto</button>
+                <button class="tab-btn" data-panel="panel-contabilita">Contabilita</button>
+            </div>
+        </div>
+
+        <div id="error-message" class="alert alert-error"></div>
+        <div id="success-message" class="alert alert-success"></div>
+
+        <section id="panel-magazzino" class="panel">
+            <h2>Crea il tuo magazzino</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Nuovo prodotto</h3>
+                    <div class="stack">
+                        <input id="product-code" type="text" placeholder="Codice prodotto">
+                        <input id="product-name" type="text" placeholder="Nome prodotto">
+                        <input id="product-category" type="text" placeholder="Categoria">
+                        <input id="product-lot" type="text" placeholder="Lotto">
+                        <input id="product-unit" type="text" placeholder="Unita di misura">
+                        <input id="product-expiry" type="date">
+                        <input id="product-stock" type="number" step="0.5" min="0" value="0" placeholder="Stock iniziale">
+                        <button class="btn-primary" id="btn-create-product">Aggiungi prodotto</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Lista magazzino</h3>
+                    <div class="row-wrap" style="margin-bottom: 10px;">
+                        <button class="btn-soft" id="btn-download-products">Scarica lista CSV</button>
+                        <button class="btn-danger" id="btn-clear-warehouse">Pulisci lista</button>
+                    </div>
+                    <div id="products-list" class="stack-rows"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="panel-ordina" class="panel">
+            <h2>Ordina prodotto</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Contatti fornitori</h3>
+                    <div class="stack">
+                        <input id="supplier-name" type="text" placeholder="Nome fornitore">
+                        <input id="supplier-email" type="email" placeholder="Email fornitore">
+                        <button class="btn-primary" id="btn-save-supplier">Salva fornitore</button>
+                    </div>
+                    <div id="suppliers-list" class="stack-rows" style="margin-top: 12px;"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Invia richiesta ordine</h3>
+                    <div class="stack">
+                        <select id="order-supplier-select"></select>
+                        <select id="order-product-select"></select>
+                        <input id="order-qty" type="number" min="1" step="1" value="1" placeholder="Quantita da ordinare">
+                        <textarea id="order-note" rows="4" placeholder="Note ordine (facoltativo)"></textarea>
+                        <button class="btn-primary" id="btn-order-email">Contatta fornitore via email</button>
+                        <p class="muted">Dopo il click si apre il client email con indirizzo, oggetto e testo precompilati.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 12px;">
+                <h3>Suggerimenti intelligenti di riordino</h3>
+                <p class="muted" style="margin-bottom: 10px;">Il sistema segnala i prodotti da ordinare prima che le scorte arrivino a zero.</p>
+                <div id="smart-order-list" class="stack-rows"></div>
+            </div>
+        </section>
+
+        <section id="panel-bolla" class="panel">
+            <h2>Carica bolla</h2>
+            <div class="card">
+                <div class="grid-2">
+                    <div class="stack">
+                        <input id="ddt-number" type="text" placeholder="Numero DDT">
+                        <select id="ddt-supplier-select"></select>
+                    </div>
+                    <div class="stack">
+                        <input id="ddt-date" type="date">
+                        <p class="muted">Inserisci i prodotti ricevuti e la loro quantita. Alla conferma le quantita si sommano allo stock.</p>
+                    </div>
+                </div>
+
+                <div class="stack-rows" id="ddt-rows" style="margin-top: 12px;"></div>
+                <div class="row-wrap" style="margin-top: 12px;">
+                    <button class="btn-soft" id="btn-add-ddt-row">Aggiungi riga prodotto</button>
+                    <button class="btn-primary" id="btn-submit-ddt">Conferma bolla</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="panel-scarico" class="panel active">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Scarico prodotto</h3>
+                    <div class="search-box">
+                        <input id="search-input" type="text" placeholder="Cerca prodotto per nome, codice o lotto" autocomplete="off">
+                        <div id="suggestions" class="suggestions"></div>
+                    </div>
+
+                    <div id="scarico-list" class="stack-rows">
+                        <div class="muted">Nessun prodotto selezionato.</div>
+                    </div>
+
+                    <button class="btn-primary" id="btn-submit-all-scarichi" style="margin-top: 12px; width: 100%;">Conferma scarichi</button>
+                </div>
+
+                <div class="card">
+                    <div class="preview-head">
+                        <h3>Anteprima scarico</h3>
+                        <div id="preview-summary" class="muted">0 prodotti</div>
+                    </div>
+                    <div id="scarico-preview" class="stack-rows"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="panel-contabilita" class="panel">
+            <h2>Contabilita e consumi</h2>
+            <div class="accounting-grid">
+                <div class="accounting-stat">
+                    <div class="muted">Uscite totali (30gg)</div>
+                    <div id="acc-out-qty" class="value">0</div>
+                </div>
+                <div class="accounting-stat">
+                    <div class="muted">Entrate totali (30gg)</div>
+                    <div id="acc-in-qty" class="value">0</div>
+                </div>
+                <div class="accounting-stat">
+                    <div class="muted">Valore uscita stimato</div>
+                    <div id="acc-out-value" class="value">€ 0,00</div>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="chart-card">
+                    <h3>Trend carico/scarico ultimi 30 giorni</h3>
+                    <div class="chart-wrap">
+                        <canvas id="accountingTrendChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Top prodotti in uscita</h3>
+                    <div class="chart-wrap">
+                        <canvas id="accountingTopChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel active">
+            <h2>Ultimi movimenti</h2>
+            <div id="movements-container" class="card"></div>
+        </section>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        const SUPPLIERS_STORAGE_KEY = 'gestionale_suppliers_v1';
+        const PRODUCT_PRICES_STORAGE_KEY = 'gestionale_product_prices_v1';
+
+        let allProducts = [];
+        let scarico = {};
+        let suppliers = [];
+        let productPrices = {};
+        let accountingTrendChart = null;
+        let accountingTopChart = null;
+
+        const searchInput = document.getElementById('search-input');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const scaricoList = document.getElementById('scarico-list');
+        const scaricoPreview = document.getElementById('scarico-preview');
+        const previewSummary = document.getElementById('preview-summary');
+        const smartOrderList = document.getElementById('smart-order-list');
+
+        initLogo();
+        init();
+
+        function initLogo() {
+            const logo = document.getElementById('brand-logo');
+            if (!logo) {
+                return;
+            }
+
+            const candidates = [
+                '/static/geckostock.png',
+                '/static/geckostock.jpg',
+                '/static/geckostock.jpeg',
+                '/static/geckostock.webp',
+                '/static/geckostock.svg',
+                '/static/geckostock',
+            ];
+
+            let index = 0;
+            logo.onerror = () => {
+                index += 1;
+                if (index < candidates.length) {
+                    logo.src = candidates[index];
+                }
+            };
+        }
+
+        function init() {
+            bindEvents();
+            suppliers = loadSuppliersFromStorage();
+            productPrices = loadProductPricesFromStorage();
+            renderSuppliers();
+            addDdtRow();
+            addDdtRow();
+            setTodayDate();
+            loadProducts();
+            loadMovements();
+            loadSmartOrders();
+            loadAccounting();
+        }
+
+        function bindEvents() {
+            document.querySelectorAll('.tab-btn').forEach((button) => {
+                button.addEventListener('click', () => switchPanel(button.dataset.panel));
+            });
+
+            document.getElementById('btn-create-product').addEventListener('click', createProduct);
+            document.getElementById('btn-download-products').addEventListener('click', downloadProducts);
+            document.getElementById('btn-clear-warehouse').addEventListener('click', clearWarehouse);
+            document.getElementById('btn-save-supplier').addEventListener('click', saveSupplier);
+            document.getElementById('btn-order-email').addEventListener('click', openOrderEmail);
+            document.getElementById('btn-add-ddt-row').addEventListener('click', addDdtRow);
+            document.getElementById('btn-submit-ddt').addEventListener('click', submitDdt);
+            document.getElementById('btn-submit-all-scarichi').addEventListener('click', submitAllScarichi);
+
+            searchInput.addEventListener('input', debounce(searchProducts, 250));
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('.search-box')) {
+                    suggestionsDiv.classList.remove('visible');
+                }
+            });
+        }
+
+        function switchPanel(panelId) {
+            document.querySelectorAll('.tab-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.panel === panelId));
+            document.querySelectorAll('.panel').forEach((panel) => {
+                if (panel.id) {
+                    panel.classList.toggle('active', panel.id === panelId);
+                }
+            });
+
+            if (panelId === 'panel-ordina') {
+                loadSmartOrders();
+            }
+            if (panelId === 'panel-contabilita') {
+                loadAccounting();
+            }
+        }
+
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('ddt-date').value = today;
+        }
+
+        async function fetchJson(url, options = {}) {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                let message = 'Errore richiesta API';
+                try {
+                    const payload = await response.json();
+                    if (payload.detail) {
+                        message = typeof payload.detail === 'string' ? payload.detail : JSON.stringify(payload.detail);
+                    }
+                } catch (_) {
+                    message = await response.text();
+                }
+                throw new Error(message);
+            }
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            return response.json();
+        }
+
+        async function loadProducts() {
+            try {
+                allProducts = await fetchJson(`${API_BASE}/products?limit=200`);
+                renderProductList();
+                refreshOrderProductSelect();
+                refreshDdtAutocomplete();
+                renderScaricoPreview();
+                loadSmartOrders();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function renderProductList() {
+            const container = document.getElementById('products-list');
+            if (!allProducts.length) {
+                container.innerHTML = '<div class="muted">Nessun prodotto presente.</div>';
+                return;
+            }
+
+            container.innerHTML = allProducts.map((product) => {
+                const safeName = escapeHtml(product.name || '-');
+                const safeCode = escapeHtml(product.code || '-');
+                const safeLot = escapeHtml(product.lot_number || '-');
+                const safeCat = escapeHtml(product.category || '-');
+                const safeUnit = escapeHtml(product.unit || 'unita');
+
+                return `
+                    <div class="warehouse-item">
+                        <div class="title-sm">${safeName}</div>
+                        <div class="muted">Codice: ${safeCode} | Lotto: ${safeLot}</div>
+                        <div class="muted">Categoria: ${safeCat} | Stock: ${product.current_stock} ${safeUnit}</div>
+                        <div class="row-wrap">
+                            <button class="btn-soft" onclick="selectProduct(${product.id})">Seleziona per scarico</button>
+                            <button class="btn-danger" onclick="removeWarehouseProduct(${product.id})">Elimina</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function createProduct() {
+            const payload = {
+                code: valueOf('product-code') || null,
+                name: valueOf('product-name'),
+                category: valueOf('product-category') || null,
+                lot_number: valueOf('product-lot') || null,
+                unit: valueOf('product-unit') || null,
+                current_stock: parseFloat(document.getElementById('product-stock').value || '0') || 0,
+                expiry_date: valueOf('product-expiry') || null,
+            };
+
+            if (!payload.name) {
+                showError('Inserisci almeno il nome prodotto');
+                return;
+            }
+
+            try {
+                await fetchJson(`${API_BASE}/products`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                clearProductForm();
+                await loadProducts();
+                showSuccess('Prodotto aggiunto al magazzino');
+                loadAccounting();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function removeWarehouseProduct(productId) {
+            try {
+                await fetchJson(`${API_BASE}/products/${productId}`, { method: 'DELETE' });
+                delete scarico[productId];
+                await loadProducts();
+                renderScaricoList();
+                showSuccess('Prodotto eliminato dal magazzino');
+                loadAccounting();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function clearWarehouse() {
+            if (!allProducts.length) {
+                showError('Il magazzino e gia vuoto');
+                return;
+            }
+
+            try {
+                for (const product of allProducts) {
+                    await fetchJson(`${API_BASE}/products/${product.id}`, { method: 'DELETE' });
+                }
+                scarico = {};
+                await loadProducts();
+                renderScaricoList();
+                showSuccess('Magazzino pulito');
+                loadAccounting();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function clearProductForm() {
+            ['product-code', 'product-name', 'product-category', 'product-lot', 'product-unit', 'product-expiry'].forEach((id) => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('product-stock').value = '0';
+        }
+
+        function downloadProducts() {
+            if (!allProducts.length) {
+                showError('Nessun prodotto da esportare');
+                return;
+            }
+
+            const rows = allProducts.map((p) => [
+                csvValue(p.code),
+                csvValue(p.name),
+                csvValue(p.category),
+                csvValue(p.lot_number),
+                csvValue(p.unit),
+                csvValue(p.current_stock),
+                csvValue(p.expiry_date),
+            ].join(','));
+
+            const csv = `codice,nome,categoria,lotto,unita,stock,scadenza\n${rows.join('\n')}`;
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'magazzino.csv';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function loadSuppliersFromStorage() {
+            try {
+                const stored = localStorage.getItem(SUPPLIERS_STORAGE_KEY);
+                return stored ? JSON.parse(stored) : [];
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function saveSuppliersToStorage() {
+            localStorage.setItem(SUPPLIERS_STORAGE_KEY, JSON.stringify(suppliers));
+        }
+
+        function loadProductPricesFromStorage() {
+            try {
+                const stored = localStorage.getItem(PRODUCT_PRICES_STORAGE_KEY);
+                return stored ? JSON.parse(stored) : {};
+            } catch (_) {
+                return {};
+            }
+        }
+
+        function saveProductPricesToStorage() {
+            localStorage.setItem(PRODUCT_PRICES_STORAGE_KEY, JSON.stringify(productPrices));
+        }
+
+        function saveSupplier() {
+            const name = valueOf('supplier-name');
+            const email = valueOf('supplier-email');
+
+            if (!name || !email) {
+                showError('Inserisci nome e email del fornitore');
+                return;
+            }
+
+            const exists = suppliers.find((supplier) => supplier.email.toLowerCase() === email.toLowerCase());
+            if (exists) {
+                exists.name = name;
+            } else {
+                suppliers.push({
+                    id: Date.now(),
+                    name,
+                    email,
+                });
+            }
+
+            saveSuppliersToStorage();
+            renderSuppliers();
+            document.getElementById('supplier-name').value = '';
+            document.getElementById('supplier-email').value = '';
+            showSuccess('Contatto fornitore salvato');
+        }
+
+        function removeSupplier(supplierId) {
+            suppliers = suppliers.filter((supplier) => supplier.id !== supplierId);
+            saveSuppliersToStorage();
+            renderSuppliers();
+        }
+
+        function renderSuppliers() {
+            const list = document.getElementById('suppliers-list');
+            if (!suppliers.length) {
+                list.innerHTML = '<div class="muted">Nessun fornitore salvato.</div>';
+            } else {
+                list.innerHTML = suppliers.map((supplier) => `
+                    <div class="supplier-item">
+                        <div class="supplier-main">
+                            <div class="title-sm">${escapeHtml(supplier.name)}</div>
+                            <div class="muted">${escapeHtml(supplier.email)}</div>
+                        </div>
+                        <button class="btn-primary" onclick="openSupplierEmail(${supplier.id})">Contatti fornitore</button>
+                        <button class="btn-danger" onclick="removeSupplier(${supplier.id})">Rimuovi</button>
+                    </div>
+                `).join('');
+            }
+
+            refreshSupplierSelects();
+        }
+
+        function openSupplierEmail(supplierId) {
+            const supplier = suppliers.find((item) => item.id === supplierId);
+            if (!supplier) {
+                showError('Fornitore non trovato');
+                return;
+            }
+
+            const subject = encodeURIComponent('Richiesta informazioni fornitura');
+            const body = encodeURIComponent('Buongiorno,\nvorrei richiedere informazioni su disponibilita e tempi di consegna.\nGrazie.');
+            window.location.href = `mailto:${supplier.email}?subject=${subject}&body=${body}`;
+        }
+
+        function refreshSupplierSelects() {
+            const orderSelect = document.getElementById('order-supplier-select');
+            const ddtSelect = document.getElementById('ddt-supplier-select');
+
+            const options = suppliers.length
+                ? suppliers.map((supplier) => `<option value="${supplier.id}">${escapeHtml(supplier.name)} (${escapeHtml(supplier.email)})</option>`).join('')
+                : '<option value="">Nessun fornitore</option>';
+
+            orderSelect.innerHTML = options;
+            ddtSelect.innerHTML = options;
+        }
+
+        function refreshOrderProductSelect() {
+            const select = document.getElementById('order-product-select');
+            if (!allProducts.length) {
+                select.innerHTML = '<option value="">Nessun prodotto</option>';
+                return;
+            }
+
+            select.innerHTML = allProducts
+                .map((product) => `<option value="${product.id}">${escapeHtml(product.name)} (stock: ${product.current_stock})</option>`)
+                .join('');
+        }
+
+        async function loadSmartOrders() {
+            try {
+                const alerts = await fetchJson(`${API_BASE}/alerts`);
+                if (!alerts.length) {
+                    smartOrderList.innerHTML = '<div class="muted">Nessun ordine urgente: le scorte sono in sicurezza.</div>';
+                    updateUrgentOrdersNotification(0);
+                    return;
+                }
+
+                smartOrderList.innerHTML = alerts.slice(0, 12).map((alert) => {
+                    const risk = alert.current_stock <= 0 ? 'Rischio esaurimento' : 'Scorta in calo';
+                    const qty = Math.max(Math.ceil(alert.suggested_order_quantity || 0), 1);
+                    return `
+                        <div class="smart-order-item urgent">
+                            <div>
+                                <div class="title-sm">${escapeHtml(alert.name)}</div>
+                                <div class="muted smart-order-risk">${risk} | Stock attuale: ${alert.current_stock} | Suggerito: ${qty}</div>
+                            </div>
+                            <button class="btn-primary" onclick="prefillOrder(${alert.product_id}, ${qty})">Precompila ordine</button>
+                        </div>
+                    `;
+                }).join('');
+                updateUrgentOrdersNotification(alerts.length);
+            } catch (error) {
+                smartOrderList.innerHTML = `<div class="muted">Impossibile caricare suggerimenti: ${escapeHtml(error.message)}</div>`;
+                updateUrgentOrdersNotification(0);
+            }
+        }
+
+        function updateUrgentOrdersNotification(count) {
+            const badge = document.getElementById('order-urgent-badge');
+            if (!badge) {
+                return;
+            }
+
+            const safeCount = Number(count || 0);
+            if (safeCount > 0) {
+                badge.textContent = safeCount > 99 ? '99+' : String(safeCount);
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+        }
+
+        function prefillOrder(productId, quantity) {
+            const productSelect = document.getElementById('order-product-select');
+            const qtyInput = document.getElementById('order-qty');
+            productSelect.value = String(productId);
+            qtyInput.value = String(quantity);
+            showSuccess('Ordine precompilato dal suggerimento intelligente');
+        }
+
+        function openOrderEmail() {
+            const supplierId = Number(document.getElementById('order-supplier-select').value);
+            const productId = Number(document.getElementById('order-product-select').value);
+            const quantity = Number(document.getElementById('order-qty').value || '0');
+            const note = document.getElementById('order-note').value.trim();
+
+            const supplier = suppliers.find((item) => item.id === supplierId);
+            const product = allProducts.find((item) => item.id === productId);
+
+            if (!supplier || !product || quantity <= 0) {
+                showError('Seleziona fornitore, prodotto e quantita valida');
+                return;
+            }
+
+            const subject = encodeURIComponent(`Ordine prodotto: ${product.name}`);
+            const bodyText = [
+                `Buongiorno ${supplier.name},`,
+                '',
+                `vorrei ordinare il seguente prodotto:`,
+                `- Prodotto: ${product.name}`,
+                `- Quantita: ${quantity}`,
+                note ? `- Note: ${note}` : '',
+                '',
+                'In attesa di conferma.',
+                'Grazie.'
+            ].filter(Boolean).join('\n');
+
+            window.location.href = `mailto:${supplier.email}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+        }
+
+        function addDdtRow(prefill = { name: '', quantity: '' }) {
+            const rowsContainer = document.getElementById('ddt-rows');
+            const rowId = `ddt-row-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            const datalistId = `ddt-products-${rowId}`;
+
+            const row = document.createElement('div');
+            row.className = 'ddt-item';
+            row.dataset.rowId = rowId;
+            row.innerHTML = `
+                <div class="row">
+                    <input type="text" class="ddt-product-name" list="${datalistId}" placeholder="Nome prodotto" value="${escapeHtml(prefill.name)}">
+                    <input type="number" class="ddt-product-qty" min="0.5" step="0.5" placeholder="Quantita" value="${escapeHtml(prefill.quantity)}">
+                    <input type="number" class="ddt-product-price" min="0" step="0.01" placeholder="Prezzo unitario (€)" value="${escapeHtml(prefill.price || '')}">
+                    <button type="button" class="btn-danger">Rimuovi</button>
+                </div>
+                <datalist id="${datalistId}"></datalist>
+            `;
+
+            row.querySelector('.btn-danger').addEventListener('click', () => {
+                row.remove();
+            });
+
+            rowsContainer.appendChild(row);
+            fillDatalist(row.querySelector('datalist'));
+        }
+
+        function refreshDdtAutocomplete() {
+            document.querySelectorAll('#ddt-rows datalist').forEach((list) => fillDatalist(list));
+        }
+
+        function fillDatalist(datalistElement) {
+            datalistElement.innerHTML = allProducts
+                .map((product) => `<option value="${escapeHtml(product.name)}"></option>`)
+                .join('');
+        }
+
+        async function submitDdt() {
+            const ddtNumber = valueOf('ddt-number');
+            const ddtDate = valueOf('ddt-date') || new Date().toISOString().split('T')[0];
+            const supplierId = Number(document.getElementById('ddt-supplier-select').value);
+            const supplier = suppliers.find((item) => item.id === supplierId);
+
+            if (!ddtNumber) {
+                showError('Inserisci numero DDT');
+                return;
+            }
+
+            if (!supplier) {
+                showError('Seleziona un fornitore per la bolla');
+                return;
+            }
+
+            const rows = Array.from(document.querySelectorAll('#ddt-rows .ddt-item'));
+            const lines = rows
+                .map((row) => ({
+                    name: row.querySelector('.ddt-product-name').value.trim(),
+                    quantity: Number(row.querySelector('.ddt-product-qty').value || '0'),
+                    unit_price: Number(row.querySelector('.ddt-product-price').value || '0'),
+                }))
+                .filter((line) => line.name && line.quantity > 0);
+
+            if (!lines.length) {
+                showError('Inserisci almeno una riga prodotto valida');
+                return;
+            }
+
+            if (lines.some((line) => line.unit_price <= 0)) {
+                showError('Inserisci un prezzo unitario maggiore di zero per ogni riga della bolla');
+                return;
+            }
+
+            try {
+                for (const line of lines) {
+                    let product = findProductByName(line.name);
+
+                    if (!product) {
+                        product = await fetchJson(`${API_BASE}/products`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                code: null,
+                                name: line.name,
+                                category: 'Caricato da bolla',
+                                lot_number: null,
+                                unit: 'unita',
+                                current_stock: 0,
+                                expiry_date: null,
+                            }),
+                        });
+                        allProducts.push(product);
+                    }
+
+                    await registerMovement(product.id, 'carico', line.quantity, ddtDate, `DDT ${ddtNumber} - ${supplier.name}`);
+                    productPrices[String(product.id)] = line.unit_price;
+                }
+
+                saveProductPricesToStorage();
+
+                document.getElementById('ddt-number').value = '';
+                document.getElementById('ddt-rows').innerHTML = '';
+                addDdtRow();
+                addDdtRow();
+                await loadProducts();
+                await loadMovements();
+                showSuccess('Bolla caricata: prodotti sommati al magazzino');
+                loadAccounting();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function findProductByName(name) {
+            return allProducts.find((product) => (product.name || '').toLowerCase() === name.toLowerCase());
+        }
+
+        async function searchProducts() {
+            const query = searchInput.value.trim();
+            if (query.length < 2) {
+                suggestionsDiv.classList.remove('visible');
+                return;
+            }
+
+            try {
+                const products = await fetchJson(`${API_BASE}/products/search?q=${encodeURIComponent(query)}&limit=15`);
+                displaySuggestions(products);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function displaySuggestions(products) {
+            if (!products.length) {
+                suggestionsDiv.innerHTML = '<div class="suggestion-item">Nessun risultato</div>';
+                suggestionsDiv.classList.add('visible');
+                return;
+            }
+
+            suggestionsDiv.innerHTML = products.map((product) => {
+                const lot = product.lot_number || '-';
+                const expiry = product.expiry_date ? new Date(product.expiry_date).toLocaleDateString('it-IT') : '-';
+                return `
+                    <div class="suggestion-item" onclick="selectProduct(${product.id})">
+                        <div>
+                            <div class="title-sm">${escapeHtml(product.name)}</div>
+                            <div class="muted">Lotto: ${escapeHtml(lot)} | Scadenza: ${expiry}</div>
+                        </div>
+                        <div class="pill">Stock ${product.current_stock}</div>
+                    </div>
+                `;
+            }).join('');
+            suggestionsDiv.classList.add('visible');
+        }
+
+        function selectProduct(productId) {
+            const product = allProducts.find((item) => item.id === productId);
+            if (!product) {
+                showError('Prodotto non trovato');
+                return;
+            }
+
+            if (!scarico[productId]) {
+                scarico[productId] = {
+                    id: product.id,
+                    name: product.name,
+                    unit: product.unit || 'unita',
+                    available: product.current_stock,
+                    quantity: 1,
+                };
+            }
+
+            searchInput.value = '';
+            suggestionsDiv.classList.remove('visible');
+            renderScaricoList();
+        }
+
+        function renderScaricoList() {
+            const entries = Object.values(scarico);
+            if (!entries.length) {
+                scaricoList.innerHTML = '<div class="muted">Nessun prodotto selezionato.</div>';
+                renderScaricoPreview();
+                return;
+            }
+
+            scaricoList.innerHTML = entries.map((item) => `
+                <div class="preview-item">
+                    <div class="title-sm">${escapeHtml(item.name)}</div>
+                    <div class="muted">Disponibile: ${item.available} ${escapeHtml(item.unit)}</div>
+                    <div class="row">
+                        <input type="number" min="0.5" step="0.5" max="${item.available}" value="${item.quantity}" onchange="updateScaricoQuantity(${item.id}, this.value)">
+                        <button class="btn-danger" onclick="removeScaricoItem(${item.id})">Rimuovi</button>
+                    </div>
+                </div>
+            `).join('');
+
+            renderScaricoPreview();
+        }
+
+        function updateScaricoQuantity(productId, value) {
+            const item = scarico[productId];
+            if (!item) {
+                return;
+            }
+
+            const qty = Number(value || '0');
+            item.quantity = qty > 0 ? qty : 0;
+            renderScaricoPreview();
+        }
+
+        function removeScaricoItem(productId) {
+            delete scarico[productId];
+            renderScaricoList();
+        }
+
+        function renderScaricoPreview() {
+            const entries = Object.values(scarico).filter((item) => item.quantity > 0);
+            if (!entries.length) {
+                previewSummary.textContent = '0 prodotti';
+                scaricoPreview.innerHTML = '<div class="muted">Anteprima vuota.</div>';
+                return;
+            }
+
+            const totalQty = entries.reduce((sum, item) => sum + item.quantity, 0);
+            previewSummary.textContent = `${entries.length} prodotti | Totale quantita: ${totalQty}`;
+
+            scaricoPreview.innerHTML = entries.map((item) => `
+                <div class="preview-item">
+                    <div class="title-sm">${escapeHtml(item.name)}</div>
+                    <div class="muted">Da scaricare: ${item.quantity} ${escapeHtml(item.unit)} (disponibile: ${item.available})</div>
+                </div>
+            `).join('');
+        }
+
+        async function registerMovement(productId, movementType, quantity, movementDate, note) {
+            return fetchJson(`${API_BASE}/movements`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: productId,
+                    movement_type: movementType,
+                    quantity,
+                    movement_date: movementDate,
+                    note,
+                }),
+            });
+        }
+
+        async function submitAllScarichi() {
+            const entries = Object.values(scarico).filter((item) => item.quantity > 0);
+            if (!entries.length) {
+                showError('Nessun prodotto da scaricare');
+                return;
+            }
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                for (const item of entries) {
+                    await registerMovement(item.id, 'scarico', item.quantity, today, `Scarico ${item.name}`);
+                }
+
+                scarico = {};
+                renderScaricoList();
+                await loadProducts();
+                await loadMovements();
+                showSuccess('Scarichi registrati con successo');
+                loadAccounting();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function loadAccounting() {
+            try {
+                const movements = await fetchJson(`${API_BASE}/movements?limit=200`);
+                const today = new Date();
+                const minDate = new Date();
+                minDate.setDate(today.getDate() - 29);
+
+                const recent = movements.filter((movement) => {
+                    const d = new Date(movement.movement_date);
+                    return d >= minDate;
+                });
+
+                let totalOut = 0;
+                let totalIn = 0;
+                for (const movement of recent) {
+                    if (movement.movement_type === 'scarico') {
+                        totalOut += Number(movement.quantity || 0);
+                    } else {
+                        totalIn += Number(movement.quantity || 0);
+                    }
+                }
+
+                let estimatedOutValue = 0;
+                for (const movement of recent) {
+                    if (movement.movement_type !== 'scarico') {
+                        continue;
+                    }
+                    const unitPrice = Number(productPrices[String(movement.product_id)] || 8);
+                    estimatedOutValue += Number(movement.quantity || 0) * unitPrice;
+                }
+                document.getElementById('acc-out-qty').textContent = formatNumber(totalOut);
+                document.getElementById('acc-in-qty').textContent = formatNumber(totalIn);
+                document.getElementById('acc-out-value').textContent = formatEuro(estimatedOutValue);
+
+                renderAccountingTrendChart(recent, minDate);
+                renderAccountingTopChart(recent);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function renderAccountingTrendChart(movements, minDate) {
+            const labels = [];
+            const inMap = new Map();
+            const outMap = new Map();
+
+            for (let i = 0; i < 30; i += 1) {
+                const d = new Date(minDate);
+                d.setDate(minDate.getDate() + i);
+                const key = d.toISOString().slice(0, 10);
+                labels.push(key.slice(5));
+                inMap.set(key, 0);
+                outMap.set(key, 0);
+            }
+
+            movements.forEach((movement) => {
+                const key = new Date(movement.movement_date).toISOString().slice(0, 10);
+                if (!inMap.has(key)) {
+                    return;
+                }
+                if (movement.movement_type === 'carico') {
+                    inMap.set(key, inMap.get(key) + Number(movement.quantity || 0));
+                } else {
+                    outMap.set(key, outMap.get(key) + Number(movement.quantity || 0));
+                }
+            });
+
+            const inSeries = Array.from(inMap.values());
+            const outSeries = Array.from(outMap.values());
+
+            const ctx = document.getElementById('accountingTrendChart').getContext('2d');
+            if (accountingTrendChart) {
+                accountingTrendChart.destroy();
+            }
+            accountingTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Carico',
+                            data: inSeries,
+                            borderColor: '#0f766e',
+                            backgroundColor: 'rgba(15, 118, 110, 0.15)',
+                            tension: 0.3,
+                            fill: true,
+                        },
+                        {
+                            label: 'Scarico',
+                            data: outSeries,
+                            borderColor: '#b91c1c',
+                            backgroundColor: 'rgba(185, 28, 28, 0.12)',
+                            tension: 0.3,
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderAccountingTopChart(movements) {
+            const outByProduct = new Map();
+            movements
+                .filter((movement) => movement.movement_type === 'scarico')
+                .forEach((movement) => {
+                    const product = allProducts.find((item) => item.id === movement.product_id);
+                    const name = movement.name || (product ? product.name : `ID ${movement.product_id}`);
+                    outByProduct.set(name, (outByProduct.get(name) || 0) + Number(movement.quantity || 0));
+                });
+
+            const top = Array.from(outByProduct.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+
+            const labels = top.map((item) => item[0]);
+            const values = top.map((item) => item[1]);
+
+            const ctx = document.getElementById('accountingTopChart').getContext('2d');
+            if (accountingTopChart) {
+                accountingTopChart.destroy();
+            }
+            accountingTopChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Quantita scaricata',
+                        data: values,
+                        backgroundColor: '#334155',
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        async function loadMovements() {
+            try {
+                const movements = await fetchJson(`${API_BASE}/movements?limit=20`);
+                const container = document.getElementById('movements-container');
+
+                if (!movements.length) {
+                    container.innerHTML = '<div class="muted">Nessun movimento registrato.</div>';
+                    return;
+                }
+
+                let html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Prodotto</th>
+                                <th>Tipo</th>
+                                <th>Quantita</th>
+                                <th>Data</th>
+                                <th>Nota</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                movements.forEach((movement) => {
+                    const productName = movement.name || `ID ${movement.product_id}`;
+                    const movementType = movement.movement_type === 'scarico' ? 'Scarico' : 'Carico';
+                    html += `
+                        <tr>
+                            <td>${escapeHtml(productName)}</td>
+                            <td>${movementType}</td>
+                            <td>${movement.quantity}</td>
+                            <td>${new Date(movement.movement_date).toLocaleDateString('it-IT')}</td>
+                            <td>${escapeHtml(movement.note || '-')}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function valueOf(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function csvValue(value) {
+            const text = value == null ? '' : String(value);
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        function formatNumber(value) {
+            return Number(value || 0).toLocaleString('it-IT', { maximumFractionDigits: 2 });
+        }
+
+        function formatEuro(value) {
+            return Number(value || 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+        }
+
+        function showError(message) {
+            const el = document.getElementById('error-message');
+            el.textContent = message;
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), 4500);
+        }
+
+        function showSuccess(message) {
+            const el = document.getElementById('success-message');
+            el.textContent = message;
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), 3200);
+        }
+
+        function debounce(func, delay) {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => func(...args), delay);
+            };
+        }
+
+        function escapeHtml(value) {
+            if (value == null) {
+                return '';
+            }
+
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        setInterval(() => {
+            loadProducts();
+            loadMovements();
+            loadSmartOrders();
+            loadAccounting();
+        }, 45000);
+    </script>
+</body>
+</html>
