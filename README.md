@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Gestionale Scorte
 
 Progetto portfolio in Python per gestire scorte di magazzino, registrare movimenti di carico/scarico e generare alert di riordino.
@@ -82,3 +83,7 @@ Esempio numerico:
 ```bash
 pytest -q
 ```
+=======
+# gestionale-scorte
+Progetto portfolio per la gestione di scorte di magazzino
+>>>>>>> 5b18cfd304515466be7c723591f42dee3a3bd9b4
